@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <General>
+      <Flags>
+        <LRSInOutputDirectory Value="False"/>
+      </Flags>
+      <SessionStorage Value="InProjectDir"/>
+      <Title Value="SD Transfer Utility"/>
+      <UseAppBundle Value="False"/>
+      <MainUnit Value="0"/>
+      <WidgetSet Value="gtk3"/>
+    </General>
+    <BuildModes Count="1">
+      <Item1 Name="Default" Default="True"/>
+    </BuildModes>
+    <RequiredPackages Count="1">
+      <Item1>
+        <PackageName Value="LCL"/>
+      </Item1>
+    </RequiredPackages>
+    <Units Count="10">
+      <Unit0>
+        <Filename Value="sdtransfer.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="sdtransfer"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="uMain.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uMain"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="uModels.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uModels"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="uConfig.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uConfig"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="uLocalPane.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uLocalPane"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="uRemotePane.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uRemotePane"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="uSDSession.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uSDSession"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="uSftpClient.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uSftpClient"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="uTransferEngine.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uTransferEngine"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="uProcessUtil.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="uProcessUtil"/>
+      </Unit9>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <Target>
+      <Filename Value="../bin/sd-transfer"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)"/>
+      <Libraries Value="../build/lib"/>
+      <UnitOutputDirectory Value="../build/units/$(TargetCPU)-$(TargetOS)"/>
+    </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <UseAnsiStrings Value="False"/>
+      </SyntaxOptions>
+    </Parsing>
+    <CodeGeneration>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
+  </CompilerOptions>
+  <Debugging>
+    <DebuggerType Value="gdb"/>
+    <Exceptions>
+      <UseDebugInfo Value="True"/>
+    </Exceptions>
+  </Debugging>
+</CONFIG>
