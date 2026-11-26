@@ -114,6 +114,19 @@ begin
     T.Free;
   end;
 
+  { 7. Echo recognition, including a piece of the echo left by a repaint. }
+  Check('echo plain', IsEchoOf(':COPY FROM xfer.in TO bp "decision.txt" DELETING',
+    'COPY FROM xfer.in TO bp "decision.txt" DELETING'));
+  Check('echo squeezed', IsEchoOf(':COPYFROMxfer.inTObp"decision.txt"DELETING',
+    'COPY FROM xfer.in TO bp "decision.txt" DELETING'));
+  Check('echo piece C', IsEchoOf('C', 'COPY FROM xfer.in TO bp "decision.txt" DELETING'));
+  Check('echo piece :COPY F', IsEchoOf(':COPY F', 'COPY FROM xfer.in TO bp "decision.txt" DELETING'));
+  Check('answer not echo', not IsEchoOf('1 record(s) copied',
+    'COPY FROM xfer.in TO bp "decision.txt" DELETING'));
+  Check('error not echo', not IsEchoOf('Record decision.txt already exists',
+    'COPY FROM xfer.in TO bp "decision.txt" DELETING'));
+  Check('prompt not echo', not IsEchoOf('::', 'COPY FROM xfer.in TO bp "x"'));
+
   if Failures = 0 then
     WriteLn('ALL PASS')
   else

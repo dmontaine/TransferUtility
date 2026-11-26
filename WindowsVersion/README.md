@@ -56,7 +56,9 @@ one). Without the helper only a key-only login could work.
   (data-only directory files, VOC `F` / name, as SD's `receive`/`send` make
   them), and lists `xfer.in` and `xfer.out`.
 - Upload to `xfer.in` and download from `xfer.out` by drag and drop under the
-  win32 widgetset; Move to Recycle Bin. A file with no final line ending comes
+  win32 widgetset; upload into `bp` (`receive overwrite`, then
+  `COPY ... DELETING`) and download from `bp` (`send bp`, then the transit copy
+  deleted from `xfer.out`); Move to Recycle Bin. A file with no final line ending comes
   back with CR LF added: SD Core for Windows writes CR LF when a directory
   file has no line-ending mode set (SD's behaviour, not the client's).
 - `ssh.exe` runs in a hidden console of 160x30 (asked for 160x50; conhost keeps
@@ -66,7 +68,6 @@ one). Without the helper only a key-only login could work.
 
 - An account that starts at the SD home screen: it needs at least 140x43, and
   with 30 rows SD starts at the prompt instead.
-- Uploading into `bp` and downloading from `bp`.
 - The Windows Solo 24251 fallback.
 - Smoke tests: `src/tests/run_smoke.sh` is bash with `/bin/sh` fakes; Windows
   fakes still need writing.

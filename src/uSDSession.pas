@@ -84,6 +84,9 @@ type
     property SlotOpen: Boolean read FSlotOpen;
   end;
 
+{ True when a line of SD output is the echo of CommandText, or a piece of it. }
+function IsEchoOf(const Line, CommandText: string): Boolean;
+
 implementation
 
 uses
@@ -1007,10 +1010,21 @@ function IsEchoOf(const Line, CommandText: string): Boolean;
   begin
     Result := UpperCase(StringReplace(T, ' ', '', [rfReplaceAll]));
   end;
+var
+  S: string;
 begin
   { SD's line editor echoes a typed command, sometimes redrawn with the
     spaces squeezed out; either form starts with the command's own words. }
   Result := Pos(Squeeze(Copy(CommandText, 1, 24)), Squeeze(Line)) > 0;
+  if Result then
+    Exit;
+  { SD Core for Windows' ConPTY can also leave a PIECE of the echo on a line
+    of its own (26 Nov 2026: a lone "C" after a COPY was logged as SD's
+    answer).  A line that is the start of the typed command is echo too. }
+  S := Squeeze(Line);
+  while (S <> '') and (S[1] = ':') do
+    Delete(S, 1, 1);
+  Result := (S <> '') and (Pos(S, Squeeze(CommandText)) = 1);
 end;
 
 function QuoteIds(const Names: TNameArray; First, Last: Integer): string;
