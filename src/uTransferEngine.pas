@@ -465,6 +465,7 @@ end;
 function TTransferEngine.TestLogin(out ErrorText: string): Boolean;
 var
   Session: TSDSession;
+  Problems: string;
 begin
   Result := False;
   ErrorText := '';
@@ -472,6 +473,10 @@ begin
     Exit;
   try
     Log('Login test complete.');
+    { Not a reason to refuse the connection: the account still works, and
+      receive/send would make the files themselves. }
+    if not Session.EnsureTransferFiles(Problems) then
+      Log('Note: ' + Problems);
     Result := True;
   finally
     Session.AbortSession;

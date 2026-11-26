@@ -19,6 +19,7 @@ type
     FBuffer: string;
     FNorm: string;          { FBuffer with terminal codes removed, kept up to date as data arrives }
     FEscState: Integer;     { position inside an escape sequence split across reads }
+    FCsiParams: string;     { parameter bytes of the CSI sequence being read }
     FLastWasCR: Boolean;    { a CR was just turned into LF; swallow a following LF }
     FLog: TSessionLogEvent;
     FLastSummary: string;
@@ -61,6 +62,8 @@ type
       Overwrite, Deleting: Boolean; out Copied: Integer; out Problems: string): Boolean;
     function DeleteRecords(const FileName: string; const Names: TNameArray;
       out Problems: string): Boolean;
+    { Makes xfer.in and xfer.out the way SD's receive/send would, if missing. }
+    function EnsureTransferFiles(out Problems: string): Boolean;
     function RenameRecord(const FileName, OldName, NewName: string;
       out Problems: string): Boolean;
     function ListRecords(const FileName: string; out Entries: TFileEntries;
@@ -70,6 +73,11 @@ type
     function ActivateSendOut(const Names: TNameArray): Boolean;
     function CloseTransfer: Boolean;
     procedure AbortSession;
+    { For tests: feed terminal output as if it came from ssh, and ask whether
+      the text so far ends in the SD prompt. }
+    procedure FeedOutput(const Data: string);
+    function AtPrompt: Boolean;
+    property NormalizedText: string read FNorm;
     property LastSummary: string read FLastSummary;
     property LastError: string read FLastError;
     property Transcript: string read FBuffer;
@@ -79,7 +87,7 @@ type
 implementation
 
 uses
-  StrUtils, RegExpr, uProcessUtil;
+  StrUtils, Math, RegExpr, uProcessUtil;
 
 const
   StartupTimeout = 30000;
@@ -133,6 +141,68 @@ var
   I, J: Integer;
   C: Char;
   Clean: string;
+
+  function LastOut: Char;
+  begin
+    if J > 0 then
+      Result := Clean[J]
+    else if FNorm <> '' then
+      Result := FNorm[Length(FNorm)]
+    else
+      Result := #10;
+  end;
+
+  procedure Emit(Ch: Char);
+  begin
+    Inc(J);
+    if J > Length(Clean) then
+      SetLength(Clean, Length(Clean) * 2 + 16);
+    Clean[J] := Ch;
+  end;
+
+  procedure EndCsi(Final: Char);
+  var
+    P, N, K: Integer;
+    Col: string;
+  begin
+    { SD Core for Windows reaches us through the server's ConPTY, which
+      redraws instead of streaming: a new line is often "ESC [ row ; 1 H"
+      rather than CR LF, and a run of spaces is "ESC [ n C".  Read those as
+      the line break and the spaces they stand for, or the prompt ":" ends
+      up glued to the banner and never looks like a prompt. }
+    case Final of
+      'H', 'f':
+        begin
+          P := Pos(';', FCsiParams);
+          if P > 0 then
+            Col := Copy(FCsiParams, P + 1, MaxInt)
+          else
+            Col := '';
+          if (Col = '') or (StrToIntDef(Col, 0) <= 1) then
+            if LastOut <> #10 then
+            begin
+              Emit(#10);
+              FLastWasCR := False;
+            end;
+        end;
+      'E':
+        if LastOut <> #10 then
+        begin
+          Emit(#10);
+          FLastWasCR := False;
+        end;
+      'C':
+        begin
+          N := StrToIntDef(FCsiParams, 1);
+          if N < 1 then N := 1;
+          if N > 400 then N := 400;
+          for K := 1 to N do
+            Emit(' ');
+          FLastWasCR := False;
+        end;
+    end;
+  end;
+
 begin
   if Data = '' then
     Exit;
@@ -148,11 +218,21 @@ begin
     C := Data[I];
     case FEscState of
       StEsc:
-        if C = '[' then FEscState := StCsi
+        if C = '[' then
+        begin
+          FEscState := StCsi;
+          FCsiParams := '';
+        end
         else if C = ']' then FEscState := StOsc
         else FEscState := StNormal;
       StCsi:
-        if C in ['@'..'~'] then FEscState := StNormal;
+        if C in ['@'..'~'] then
+        begin
+          FEscState := StNormal;
+          EndCsi(C);
+        end
+        else
+          FCsiParams := FCsiParams + C;
       StOsc:
         if C = #7 then FEscState := StNormal
         else if C = #27 then FEscState := StOscEsc;
@@ -170,7 +250,7 @@ begin
       end
       else if C = #13 then
       begin
-        Inc(J); Clean[J] := #10;
+        Emit(#10);
         FLastWasCR := True;
       end
       else if C = #10 then
@@ -179,18 +259,28 @@ begin
           FLastWasCR := False
         else
         begin
-          Inc(J); Clean[J] := #10;
+          Emit(#10);
         end;
       end
       else if (C = #9) or (Ord(C) >= 32) then
       begin
-        Inc(J); Clean[J] := C;
+        Emit(C);
         FLastWasCR := False;
       end;
     end;
   end;
   SetLength(Clean, J);
   FNorm := FNorm + Clean;
+end;
+
+procedure TSDSession.FeedOutput(const Data: string);
+begin
+  AppendOutput(Data);
+end;
+
+function TSDSession.AtPrompt: Boolean;
+begin
+  Result := PromptVisible;
 end;
 
 function TSDSession.CommandOutput: string;
@@ -559,6 +649,13 @@ begin
     if FLastError = '' then
       FLastError := 'The SD session did not reach a command prompt.';
     LogText('The SD session did not start: ' + FLastError);
+    { What the server sent last, so a prompt that was not recognised can be
+      seen.  It holds no password: those reach ssh only through sd-askpass. }
+    if Trim(FNorm) <> '' then
+      LogText('Last output from the server:' + LineEnding +
+        Copy(FNorm, Max(1, Length(FNorm) - 1500 + 1), 1500))
+    else
+      LogText('The server sent nothing before the session gave up.');
   end;
 end;
 
@@ -1033,6 +1130,73 @@ begin
     LogText(Format('%s: %s renamed to %s.', [FileName, OldName, NewName]));
 end;
 
+function TSDSession.EnsureTransferFiles(out Problems: string): Boolean;
+const
+  Names: array[0..1] of string = ('xfer.in', 'xfer.out');
+var
+  CommandText, Line, Said: string;
+  Lines: TStringList;
+  I, N: Integer;
+  Ok: Boolean;
+begin
+  { SD's receive and send make xfer.in and xfer.out on first use; until then
+    the SD pane has nothing to list (owner, 26 Nov 2026: the utility creates
+    them).  "CREATE.FILE DATA <name> DIRECTORY" typed in lower case makes
+    exactly what gpl.bp/xfer makes: a data-only directory file in the
+    account's own directory and the VOC entry  <name> = F / <name>, which
+    xfer's own VOC check accepts.  An existing file is left alone ("DATA part
+    of file already exists"). }
+  Result := True;
+  Problems := '';
+  for N := 0 to High(Names) do
+  begin
+    if not WaitForPrompt(PromptTimeout) then
+    begin
+      Problems := Problems + 'The SD command prompt is not available.' + LineEnding;
+      Result := False;
+      Break;
+    end;
+    CommandText := 'CREATE.FILE DATA ' + Names[N] + ' DIRECTORY';
+    FCommandStart := Length(FNorm);
+    SendLine(CommandText);
+    if not WaitForCommandPrompt(30000) then
+    begin
+      Problems := Problems + 'SD did not answer CREATE.FILE for ' + Names[N] + '.' + LineEnding;
+      Result := False;
+      Continue;
+    end;
+    Ok := False;
+    Said := '';
+    Lines := TStringList.Create;
+    try
+      Lines.Text := CommandOutput;
+      for I := 0 to Lines.Count - 1 do
+      begin
+        Line := Trim(Lines[I]);
+        if (Line = '') or (Line = ':') or (Line = '::') or IsEchoOf(Line, CommandText) then
+          Continue;
+        if Pos('already exists', Line) > 0 then
+          Ok := True
+        else if Pos('Created DATA part', Line) > 0 then
+        begin
+          Ok := True;
+          LogText('Created ' + Names[N] + ' in the SD account (it is made on first use otherwise).');
+        end
+        else
+          Said := Said + Line + ' ';
+      end;
+    finally
+      Lines.Free;
+    end;
+    if not Ok then
+    begin
+      Result := False;
+      Problems := Problems + 'Could not create ' + Names[N] + ': ' + Trim(Said) + LineEnding;
+    end;
+  end;
+  Problems := Trim(Problems);
+end;
+
 function TSDSession.DeleteRecords(const FileName: string; const Names: TNameArray;
   out Problems: string): Boolean;
 var
@@ -1148,6 +1312,17 @@ begin
   end;
 end;
 
+function FindEntryIndex(const Entries: TFileEntries; Count: Integer;
+  const Name: string): Integer;
+var
+  I: Integer;
+begin
+  for I := 0 to Count - 1 do
+    if Entries[I].Name = Name then
+      Exit(I);
+  Result := -1;
+end;
+
 function TSDSession.ListRecords(const FileName: string; out Entries: TFileEntries;
   out ErrorText: string): Boolean;
 const
@@ -1199,20 +1374,31 @@ begin
   R := TRegExpr.Create('^(.*\S)\s+(\d+)\s*$');
   try
     Lines.Text := CommandOutput;
-    { Skip the echoed command (the line editor may redraw it more than once). }
-    Start := 0;
+    { Start after the FIRST echo of the command and skip every echo line.  The
+      line editor may redraw the command more than once, and SD Core for
+      Windows' ConPTY may repaint it AFTER SD's answer: starting after the
+      last echo lost "File not found" there and listed a missing file as
+      empty (26 Nov 2026). }
+    Start := Lines.Count;
     for I := 0 to Lines.Count - 1 do
       if Pos(EchoEnd, Lines[I]) > 0 then
+      begin
         Start := I + 1;
+        Break;
+      end;
     Count := 0;
     Messages := '';
     for I := Start to Lines.Count - 1 do
     begin
       Line := TrimRight(Lines[I]);
-      if (Trim(Line) = '') or (Trim(Line) = ':') or (Trim(Line) = '::') then
+      if (Trim(Line) = '') or (Trim(Line) = ':') or (Trim(Line) = '::') or
+         (Pos(EchoEnd, Line) > 0) then
         Continue;
       if R.Exec(Line) and TryStrToInt64(R.Match[2], Size) then
       begin
+        { A repaint can show a line twice; record ids are unique in a file. }
+        if FindEntryIndex(Entries, Count, R.Match[1]) >= 0 then
+          Continue;
         SetLength(Entries, Count + 1);
         Entries[Count].Name := R.Match[1];
         Entries[Count].Size := Size;
