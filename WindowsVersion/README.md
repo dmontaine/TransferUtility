@@ -51,12 +51,16 @@ one). Without the helper only a key-only login could work.
 - Creating a key through `sd-askpass.exe`, with and without a passphrase.
 - `ssh -G` known-hosts paths (`C:\Users\...\/.ssh/known_hosts`,
   `__PROGRAMDATA__\ssh/...`) are mapped to real Windows paths.
+- Against SD Core for Windows WC2.0-0 (key + password login): Connect reaches
+  the SD prompt through `ssh.exe -tt`, creates `xfer.in` and `xfer.out`
+  (data-only directory files, VOC `F` / name, as SD's `receive`/`send` make
+  them), and lists `xfer.in`.
 
 ## Not yet checked on Windows
 
-- A real login and the SD command session through `ssh.exe -tt` without a local
-  terminal: reaching the `:` prompt, and an account that starts at the SD home
-  screen (needs at least 140x43; ssh's default terminal size may be smaller).
+- An account that starts at the SD home screen (needs at least 140x43; the
+  terminal Windows `ssh.exe` asks for may be smaller, in which case SD starts
+  at the prompt instead).
 - Upload/download through the GUI, and drag and drop under the win32 widgetset.
 - The Windows Solo 24251 fallback.
 - Smoke tests: `src/tests/run_smoke.sh` is bash with `/bin/sh` fakes; Windows
