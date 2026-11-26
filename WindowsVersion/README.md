@@ -54,14 +54,19 @@ one). Without the helper only a key-only login could work.
 - Against SD Core for Windows WC2.0-0 (key + password login): Connect reaches
   the SD prompt through `ssh.exe -tt`, creates `xfer.in` and `xfer.out`
   (data-only directory files, VOC `F` / name, as SD's `receive`/`send` make
-  them), and lists `xfer.in`.
+  them), and lists `xfer.in` and `xfer.out`.
+- Upload to `xfer.in` and download from `xfer.out` by drag and drop under the
+  win32 widgetset; Move to Recycle Bin. A file with no final line ending comes
+  back with CR LF added: SD Core for Windows writes CR LF when a directory
+  file has no line-ending mode set (SD's behaviour, not the client's).
+- `ssh.exe` runs in a hidden console of 160x30 (asked for 160x50; conhost keeps
+  30 rows), wide enough for the 130-column listing. No window appears.
 
 ## Not yet checked on Windows
 
-- An account that starts at the SD home screen (needs at least 140x43; the
-  terminal Windows `ssh.exe` asks for may be smaller, in which case SD starts
-  at the prompt instead).
-- Upload/download through the GUI, and drag and drop under the win32 widgetset.
+- An account that starts at the SD home screen: it needs at least 140x43, and
+  with 30 rows SD starts at the prompt instead.
+- Uploading into `bp` and downloading from `bp`.
 - The Windows Solo 24251 fallback.
 - Smoke tests: `src/tests/run_smoke.sh` is bash with `/bin/sh` fakes; Windows
   fakes still need writing.

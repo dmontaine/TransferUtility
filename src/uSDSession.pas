@@ -583,7 +583,19 @@ begin
       FProcess := TProcess.Create(nil);
       FProcess.Executable := Ssh;
       FProcess.Parameters.Assign(SshArgs);
-      FProcess.Options := ChildProcessOptions;
+      { Windows ssh.exe reports its console's window size to the server as
+        the terminal size.  The hidden console poNoConsole gives is 120x30,
+        which wraps the 130-column SORT listing (26 Nov 2026: "decision.txt"
+        and "1090" came back on separate lines).  A new hidden console asked
+        for 160x50 character cells has a 160-column window (rows stay at 30,
+        conhost's default window height; SD then starts at the prompt rather
+        than the 140x43 home screen).  Measured: no window and no Windows
+        Terminal appears, with Windows deciding the default terminal. }
+      FProcess.Options := [poUsePipes, poStderrToOutPut, poNewConsole];
+      FProcess.ShowWindow := swoHide;
+      FProcess.StartupOptions := [suoUseShowWindow, suoUseCountChars];
+      FProcess.WindowColumns := 160;
+      FProcess.WindowRows := 50;
       FProcess.Environment.Assign(Env);
       FProcess.Execute;
     finally
@@ -1388,12 +1400,22 @@ begin
       end;
     Count := 0;
     Messages := '';
-    for I := Start to Lines.Count - 1 do
+    I := Start - 1;
+    while I < Lines.Count - 1 do
     begin
+      Inc(I);
       Line := TrimRight(Lines[I]);
       if (Trim(Line) = '') or (Trim(Line) = ':') or (Trim(Line) = '::') or
          (Pos(EchoEnd, Line) > 0) then
         Continue;
+      { A terminal narrower than the 130-column row wraps it: the id on one
+        line, the length alone on the next.  Join them back. }
+      if (not R.Exec(Line)) and (I + 1 < Lines.Count) and
+         TryStrToInt64(Trim(Lines[I + 1]), Size) then
+      begin
+        Line := Line + '  ' + Trim(Lines[I + 1]);
+        Inc(I);
+      end;
       if R.Exec(Line) and TryStrToInt64(R.Match[2], Size) then
       begin
         { A repaint can show a line twice; record ids are unique in a file. }
