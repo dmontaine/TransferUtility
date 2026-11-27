@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>SD Core Transfer Utility</title>
+  <rect width="64" height="64" rx="16" fill="#E85D2A"/>
+  <path d="M14 23h26v-7l12 11-12 11v-7H14Z" fill="#FFF9EF"/>
+  <path d="M50 41H24v-7L12 45l12 11v-7h26Z" fill="#FFF9EF" opacity=".92"/>
+  <circle cx="51" cy="13" r="3.25" fill="#0E6B66"/>
+</svg>

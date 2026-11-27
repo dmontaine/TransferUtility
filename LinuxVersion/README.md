@@ -12,8 +12,34 @@ Needs Lazarus 5.0 and FPC 3.2.2 with the GTK3 widgetset.
 It builds `bin/sd-transfer` and `bin/sd-askpass` at the repository root. Set
 `LAZARUS_DIR` if Lazarus is not in `/usr/share/lazarus/5.0.0`.
 
+## Debian package
+
+    LinuxVersion/build-deb.sh            # builds the program, then the package
+    LinuxVersion/build-deb.sh --no-build # packages what is already in bin/
+
+It makes `build/deb/transfer-utility.deb` (no version in the file name, like
+the Windows `transfer-utility-setup.exe`; the package's own version is
+`AppVersion` from `src/uModels.pas` plus the repository's commit count, for
+example `1.1.0-24`, so every new build installs as an upgrade).
+One package serves Debian 13 and Ubuntu 24.04 and later: the script refuses a
+binary that needs a glibc newer than 2.34, and the dependencies accept both
+the `t64` and the older library package names.
+
+Install, upgrade over an installed copy, and remove:
+
+    sudo apt install ./transfer-utility.deb
+    sudo apt remove transfer-utility
+
+It installs `/usr/lib/sd-transfer/` (`sd-transfer` and `sd-askpass` together),
+a `/usr/bin/sd-transfer` launcher, the menu entry "SD Core Transfer Utility"
+with its icon, and the license and user guide under
+`/usr/share/doc/transfer-utility/`. No source code is in the package; About
+shows the GitHub address. Removing it leaves `~/.config/sd-transfer-utility`
+and `~/.ssh` alone.
+
 ## Linux-only pieces
 
+- `build-deb.sh`, `sd-transfer.svg` — the Debian package and its menu icon.
 - `build.sh` — GTK3 link-time library shims, `fpc` for the helper, `lazbuild --ws=gtk3`, `strip`.
 - The SD Core command session runs ssh inside `script` (util-linux) to give it a 160x50 terminal.
 - Local files are moved to the desktop Trash with `gio trash`.

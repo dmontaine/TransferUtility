@@ -1198,6 +1198,29 @@ begin
   FLocalPane.ListView.OnMouseDown := @ListMouseDown;
 end;
 
+{ The row under a mouse position, from the rows' own rectangles.  Not
+  TListView.GetItemAt: under GTK3 the mouse position arrives relative to the
+  rows (below the column header) and GetItemAt subtracts the header height
+  again, so a right-click picked the row above, or none on the top row and
+  the menu then acted on whatever was selected before (owner, 26 Nov 2026).
+  DisplayRect is in the same coordinates as the mouse position on GTK3 and on
+  win32 alike. }
+function ItemAtPoint(List: TListView; X, Y: Integer): TListItem;
+var
+  I: Integer;
+  R: TRect;
+begin
+  Result := nil;
+  for I := 0 to List.Items.Count - 1 do
+  begin
+    R := List.Items[I].DisplayRect(drBounds);
+    if Y < R.Top then
+      Break;
+    if Y < R.Bottom then
+      Exit(List.Items[I]);
+  end;
+end;
+
 procedure TMainForm.ListMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
@@ -1209,7 +1232,7 @@ begin
   if Button <> mbRight then
     Exit;
   List := Sender as TListView;
-  Item := List.GetItemAt(X, Y);
+  Item := ItemAtPoint(List, X, Y);
   if (Item <> nil) and not Item.Selected then
   begin
     List.ClearSelection;

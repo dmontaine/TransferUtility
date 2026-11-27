@@ -58,7 +58,18 @@ ssh-keyscan -T 5 -p <port> <host> 2>/dev/null | ssh-keygen -lf -
 
 ## 3. Installing on Linux
 
-Requirements:
+On Debian 13 or Ubuntu 24.04 and later, install the package (it pulls in
+what it needs):
+
+```bash
+sudo apt install ./transfer-utility.deb
+```
+
+and start **SD Core Transfer Utility** from the applications menu, or run
+`sd-transfer`. `sudo apt remove transfer-utility` removes it and leaves your
+settings and ssh keys alone.
+
+To build it yourself instead, the requirements are:
 
 - x86-64 Linux desktop with the GTK3 runtime libraries;
 - the OpenSSH client (`ssh`, `sftp`, `ssh-keygen`, `ssh-keyscan`);
