@@ -16,10 +16,11 @@
 
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# The package revision is the number of commits on this branch, so each new
-# build is an upgrade for apt (1.1.0-23, 1.1.0-24, ...) while AppVersion, the
-# program's own version, stays as the owner sets it.
-REVISION="$(git -C "$ROOT" rev-list --count HEAD)"
+# The package revision is the time of the commit it is built from (UTC,
+# YYYYMMDDHHMM), so each new build is an upgrade for apt while AppVersion, the
+# program's own version, stays as the owner sets it.  (It was the commit count
+# up to 1.1.0-26; any timestamp is higher, so those installs upgrade too.)
+REVISION="$(TZ=UTC git -C "$ROOT" log -1 --format=%cd --date=format-local:%Y%m%d%H%M HEAD)"
 MAX_GLIBC=2.34   # Ubuntu 24.04 has 2.39, Debian 13 has 2.41
 
 cd "$ROOT"

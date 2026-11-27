@@ -1,9 +1,19 @@
 # SD Core Transfer Utility
 
 A desktop client that moves plain-text files between your computer and your own
-account on an SD Core server over ssh/sftp. It works with all four SD Core editions (SD Core
-Core and SD Core Solo, on Linux and on Windows) and uses only standard SD Core
+account on an SD Core server over ssh/sftp, using only standard SD Core
 commands. Written in Lazarus / Free Pascal.
+
+It is designed to work with the four SD Core 2.0-0 releases: SD Core for
+Linux, SD Core Solo for Linux, SD Core for Windows and SD Core Solo for Windows.
+
+## Download
+
+Installers for each version are on the
+[Releases](https://github.com/dmontaine/TransferUtility/releases) page:
+`transfer-utility-setup.exe` for Windows, `transfer-utility.deb` for Debian 13
+and Ubuntu 24.04 and later. `docs/INSTALL.md` covers installing and the first
+connection.
 
 ## Layout
 
