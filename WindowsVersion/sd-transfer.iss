@@ -57,6 +57,7 @@ WizardStyle=modern
 MinVersion=10.0.17763
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+SetupIconFile={#Root}\src\sdtransfer.ico
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName} {#AppVer}
 ; An upgrade while the program is open asks to close it rather than failing.

@@ -8,6 +8,7 @@
       </Flags>
       <SessionStorage Value="InProjectDir"/>
       <Title Value="SD Core Transfer Utility"/>
+      <Icon Value="0"/>
       <UseAppBundle Value="False"/>
       <MainUnit Value="0"/>
       <WidgetSet Value="gtk3"/>

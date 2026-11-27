@@ -13,6 +13,10 @@ uses
   {$ENDIF}
   SysUtils, Interfaces, Forms, uModels, uMain;
 
+{ The program icon (sdtransfer.ico); lazbuild makes sdtransfer.res from it.
+  Windows shows it for the window, the taskbar and Explorer. }
+{$IFDEF WINDOWS}{$R *.res}{$ENDIF}
+
 begin
   if ParamStr(1) = '--version' then
   begin
