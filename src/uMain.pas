@@ -341,7 +341,7 @@ begin
   FConnGroup.Align := alTop;
   FConnGroup.AutoSize := True;
   FConnGroup.BorderSpacing.Around := 6;
-  FConnGroup.Caption := ' SSH connection to the SD server ';
+  FConnGroup.Caption := ' SSH connection to the SD Core server ';
   FConnGroup.ChildSizing.TopBottomSpacing := 2;
 
   { One row: Server, Host, User, Password, Connect, state, menu.  Widths
@@ -352,7 +352,7 @@ begin
   FServerType.Width := 210;
   for I := 0 to High(ServerTypes) do
     FServerType.Items.Add(ServerTypes[I].Name);
-  FServerType.Hint := 'Which SD edition the server runs.  This decides the ssh ' +
+  FServerType.Hint := 'Which SD Core edition the server runs.  This decides the ssh ' +
     'port: 22 for SD Core, 4251 for SD Core Solo.';
   FServerType.ShowHint := True;
   FServerType.OnChange := @ServerTypeChange;
@@ -434,7 +434,7 @@ begin
   FModeUpload.Parent := FModeBar;
   FModeUpload.Width := 170;
   FModeUpload.Height := 34;
-  FModeUpload.Caption := 'Upload:  Local -> SD';
+  FModeUpload.Caption := 'Upload:  Local -> SD Core';
   FModeUpload.GroupIndex := 1;
   FModeUpload.AllowAllUp := False;
   FModeUpload.Down := True;
@@ -449,7 +449,7 @@ begin
   FModeDownload.Parent := FModeBar;
   FModeDownload.Width := 170;
   FModeDownload.Height := 34;
-  FModeDownload.Caption := 'Download:  SD -> Local';
+  FModeDownload.Caption := 'Download:  SD Core -> Local';
   FModeDownload.GroupIndex := 1;
   FModeDownload.AllowAllUp := False;
   FModeDownload.OnClick := @DownloadModeClick;
@@ -496,7 +496,7 @@ begin
   FBottomPanel.BorderSpacing.Right := 6;
   FBottomPanel.BorderSpacing.Bottom := 4;
 
-  LogTitle := NewLabel(FBottomPanel, 'Activity and SD server responses', True);
+  LogTitle := NewLabel(FBottomPanel, 'Activity and SD Core server responses', True);
   LogTitle.Align := alTop;
   LogTitle.BorderSpacing.Bottom := 2;
 
@@ -654,25 +654,25 @@ begin
   begin
     if FUploadBp then
     begin
-      FRemotePane.SetTitle('SD server - bp (uploads go through xfer.in)',
+      FRemotePane.SetTitle('SD Core server - bp (uploads go through xfer.in)',
         'records of your bp file');
-      FLocalPane.SetDropHint('Drag selected local files onto the SD pane to upload them into bp.');
-      FRemotePane.SetDropHint('Drop local files here; SD copies them into bp when the transfer ends.');
+      FLocalPane.SetDropHint('Drag selected local files onto the SD Core pane to upload them into bp.');
+      FRemotePane.SetDropHint('Drop local files here; SD Core copies them into bp when the transfer ends.');
       SetStatus('Upload into bp. Drag local files onto the bp list; they travel through xfer.in.', False);
     end
     else
     begin
       FRemotePane.SetDirectoryName(SDUploadDirectory, True);
-      FLocalPane.SetDropHint('Drag selected local files onto the SD pane to upload.');
+      FLocalPane.SetDropHint('Drag selected local files onto the SD Core pane to upload.');
       FRemotePane.SetDropHint('Drop local files here to upload into xfer.in.');
-      SetStatus('Upload mode. Drag local files onto the SD pane to upload them into xfer.in.', False);
+      SetStatus('Upload mode. Drag local files onto the SD Core pane to upload them into xfer.in.', False);
     end;
   end
   else
   begin
     if FDownloadBp then
     begin
-      FRemotePane.SetTitle('SD server - bp (downloads go through xfer.out)',
+      FRemotePane.SetTitle('SD Core server - bp (downloads go through xfer.out)',
         'records of your bp file');
       FLocalPane.SetDropHint('Drop bp records here to download them into this folder.');
       FRemotePane.SetDropHint('Select bp records, then drag them to the local pane.');
@@ -680,9 +680,9 @@ begin
     end
     else
     begin
-      FRemotePane.SetTitle('SD server - xfer.out (downloads)',
+      FRemotePane.SetTitle('SD Core server - xfer.out (downloads)',
         'files waiting in xfer.out');
-      FLocalPane.SetDropHint('Drop SD files here to download them into this folder.');
+      FLocalPane.SetDropHint('Drop SD Core files here to download them into this folder.');
       FRemotePane.SetDropHint('Select files waiting in xfer.out, then drag them to the local pane.');
       SetStatus('Download mode. Drag files from xfer.out to the local pane.', False);
     end;
@@ -952,7 +952,7 @@ begin
     Ids := SelectedRemoteNames;
     if Length(Ids) = 0 then
     begin
-      ErrorText := 'Select one or more SD files to download.';
+      ErrorText := 'Select one or more SD Core files to download.';
       Exit;
     end;
     for I := 0 to High(Ids) do
@@ -960,12 +960,12 @@ begin
       if Request.UseBp and (Pos(' ', Ids[I]) > 0) then
       begin
         ErrorText := 'The bp record "' + Ids[I] + '" has a space in its name, so ' +
-          'the send command cannot name it.  Rename it in SD to download it.';
+          'the send command cannot name it.  Rename it in SD Core to download it.';
         Exit;
       end;
       if not IsValidSdName(Ids[I], Reason) then
       begin
-        ErrorText := 'The SD file "' + Ids[I] + '" cannot be transferred: ' + Reason;
+        ErrorText := 'The SD Core file "' + Ids[I] + '" cannot be transferred: ' + Reason;
         Exit;
       end;
     end;
@@ -994,7 +994,7 @@ begin
     Request.RemoteNames := SelectedRemoteNames;
     if Length(Request.RemoteNames) = 0 then
     begin
-      ErrorText := 'Select one or more SD files to download.';
+      ErrorText := 'Select one or more SD Core files to download.';
       Exit;
     end;
   end;
@@ -1103,9 +1103,9 @@ end;
 procedure TMainForm.UpdateKeyCaption;
 begin
   if FKeyFile = '' then
-    FConnGroup.Caption := ' SSH connection to the SD server '
+    FConnGroup.Caption := ' SSH connection to the SD Core server '
   else
-    FConnGroup.Caption := ' SSH connection to the SD server  -  key: ' + FKeyFile + ' ';
+    FConnGroup.Caption := ' SSH connection to the SD Core server  -  key: ' + FKeyFile + ' ';
 end;
 
 procedure TMainForm.MenuButtonClick(Sender: TObject);
@@ -1476,7 +1476,7 @@ begin
     AppendLogLine(MessageText);
     if Trim(Summary) <> '' then
     begin
-      AppendLogLine('SD summary:');
+      AppendLogLine('SD Core summary:');
       AppendLogLine(Summary);
     end;
     if Kind = jkTest then
@@ -1484,7 +1484,7 @@ begin
       FConnected := True;
       UpdateControlState;
       SetStatus('Connected as ' + Trim(FUserEdit.Text) + ' to ' + Trim(FHostEdit.Text) +
-        '.  Each listing and transfer signs in for its own short SD session.', False);
+        '.  Each listing and transfer signs in for its own short SD Core session.', False);
       LoadViewIfNeeded;
       Exit;
     end;
@@ -1538,7 +1538,7 @@ end;
 
 procedure TMainForm.ShowError(const AText: string);
 begin
-  MessageDlg('SD Transfer Utility', AText, mtError, [mbOK], 0);
+  MessageDlg('SD Core Transfer Utility', AText, mtError, [mbOK], 0);
 end;
 
 constructor TTransferThread.Create(const Settings: TConnectionSettings;

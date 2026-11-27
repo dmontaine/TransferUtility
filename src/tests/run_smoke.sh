@@ -7,11 +7,18 @@ TESTBIN_CLOSE="$ROOT/build/testbin-close"
 TESTEXE="$ROOT/build/tests"
 mkdir -p "$TESTBIN" "$TESTBIN_CLOSE" "$TESTEXE"
 
+# The local SD account the session probe uses: by default the one named like
+# the Linux user.
+ACCOUNT="${SDTU_TEST_ACCOUNT:-/home/sd/user_accounts/$(id -un)}"
+if [ ! -d "$ACCOUNT" ]; then
+  echo "No SD account at $ACCOUNT; set SDTU_TEST_ACCOUNT"; exit 1
+fi
+
 # The local SD binary is used only for the PTY/prompt/error probe.
-cat > "$TESTBIN/ssh" <<'EOF'
+cat > "$TESTBIN/ssh" <<EOF
 #!/bin/sh
-cd /home/sd/user_accounts/don
-exec /usr/local/sdsys/bin/sd -adon
+cd "$ACCOUNT"
+exec /usr/local/sdsys/bin/sd -a$(basename "$ACCOUNT")
 EOF
 chmod +x "$TESTBIN/ssh"
 
@@ -71,10 +78,14 @@ fpc -O- -Fu"$ROOT/src" -FU"$TESTEXE" -FE"$TESTEXE" \
   "$ROOT/src/tests/sftp_probe.lpr"
 fpc -O- -Fu"$ROOT/src" -FU"$TESTEXE" -FE"$TESTEXE" \
   "$ROOT/src/tests/close_probe.lpr"
+fpc -O- -Fu"$ROOT/src" -FU"$TESTEXE" -FE"$TESTEXE" \
+  "$ROOT/src/tests/conpty_probe.lpr"
+
+# Offline: SD Core for Windows' ConPTY output and the echo rules (no SD needed).
+"$TESTEXE/conpty_probe" | tail -1
 
 # A throwaway file in the local account's xfer.in for the COPY-into-bp check;
 # the probe copies it into bp with DELETING and then deletes it from bp.
-ACCOUNT=/home/sd/user_accounts/don
 printf 'PRINT "SDTU PROBE"\nEND\n' > "$ACCOUNT/xfer.in/ZZ_SDTU_PROBE"
 PATH="$TESTBIN:$PATH" "$TESTEXE/session_probe"
 if [ -e "$ACCOUNT/xfer.in/ZZ_SDTU_PROBE" ] || [ -e "$ACCOUNT/bp/ZZ_SDTU_PROBE" ] ||

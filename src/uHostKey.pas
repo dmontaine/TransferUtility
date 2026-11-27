@@ -198,7 +198,7 @@ begin
   if KeyLines.Count = 0 then
   begin
     ErrorText := Format('Could not read the host key of %s port %d.  Check the ' +
-      'host name and the server type (port), and that the SD server is running.',
+      'host name and the server type (port), and that the SD Core server is running.',
       [View.HostName, View.Port]);
     if Trim(Output) <> '' then
       ErrorText := ErrorText + LineEnding + LineEnding + Trim(Output);
@@ -340,14 +340,14 @@ begin
       Shown := View.HostName
     else
       Shown := View.HostName + ', port ' + IntToStr(View.Port);
-    Question := 'This computer has not connected to the SD server ' + Shown +
+    Question := 'This computer has not connected to the SD Core server ' + Shown +
       ' before, so it cannot yet tell whether this really is that server.' +
       LineEnding + LineEnding + 'Its host key fingerprint is:' + LineEnding +
       Fingerprints(KeyLines) + LineEnding +
-      'If you can, compare this with the fingerprint your SD administrator gave you.' +
+      'If you can, compare this with the fingerprint your SD Core administrator gave you.' +
       LineEnding + LineEnding + 'Trust this server and remember its key?';
     if (not Assigned(Confirm)) or
-       (not Confirm('New SD server', Question)) then
+       (not Confirm('New SD Core server', Question)) then
     begin
       ErrorText := 'Not connected: the server''s host key was not accepted.';
       Exit;

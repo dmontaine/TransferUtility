@@ -160,7 +160,7 @@ begin
     end;
     if DirectoryExists(LocalPaths[I]) then
     begin
-      ErrorText := 'SD accepts plain files only, not directories: ' + LocalPaths[I];
+      ErrorText := 'SD Core accepts plain files only, not directories: ' + LocalPaths[I];
       Exit;
     end;
     Name := ExtractFileName(ExcludeTrailingPathDelimiter(LocalPaths[I]));
@@ -197,7 +197,7 @@ begin
   end;
   if Length(RemoteNames) = 0 then
   begin
-    ErrorText := 'Select one or more SD files to download.';
+    ErrorText := 'Select one or more SD Core files to download.';
     Exit;
   end;
   SetLength(LocalPaths, Length(RemoteNames));
@@ -205,7 +205,18 @@ begin
   begin
     if not IsValidSdName(RemoteNames[I], Reason) then
     begin
-      ErrorText := Format('The SD file "%s" cannot be downloaded: %s', [RemoteNames[I], Reason]);
+      ErrorText := Format('The SD Core file "%s" cannot be downloaded: %s', [RemoteNames[I], Reason]);
+      Exit;
+    end;
+    { SD's SEND takes its record ids as space-separated words with no quoting
+      (gpl.bp/xfer, all four editions), so "send bp a b" would send records
+      "a" and "b".  The server accepts such names on upload; they can only be
+      downloaded after a rename. }
+    if Pos(' ', RemoteNames[I]) > 0 then
+    begin
+      ErrorText := Format('The SD Core file "%s" cannot be downloaded: SD Core''s send ' +
+        'command cannot name a file that contains a space.  Rename it first ' +
+        '(right-click > Rename...).', [RemoteNames[I]]);
       Exit;
     end;
     Target := IncludeTrailingPathDelimiter(Dir) + RemoteNames[I];
@@ -262,7 +273,7 @@ begin
   Session := TSDSession.Create(FSettings, AskPassExecutable, @Log);
   if Session.StartSession then
   begin
-    Log('SSH login succeeded; SD command prompt reached.');
+    Log('SSH login succeeded; SD Core command prompt reached.');
     Result := True;
     Exit;
   end;
@@ -292,7 +303,7 @@ begin
     begin
       ErrorText := CleanError(Session.LastError);
       if ErrorText = '' then
-        ErrorText := 'SD did not confirm that the transfer closed.';
+        ErrorText := 'SD Core did not confirm that the transfer closed.';
       Exit(False);
     end;
     Summary := Session.LastSummary;
@@ -408,7 +419,7 @@ begin
     Result := Session.RenameRecord(FileName, OldName, NewName, Problems);
     if not Result then
     begin
-      ErrorText := 'SD did not rename ' + OldName + ' in ' + FileName + '.';
+      ErrorText := 'SD Core did not rename ' + OldName + ' in ' + FileName + '.';
       if Problems <> '' then
         ErrorText := ErrorText + LineEnding + LineEnding + Problems;
     end;
@@ -433,7 +444,7 @@ begin
   try
     Result := Session.DeleteRecords(FileName, Names, Problems);
     if not Result then
-      ErrorText := 'SD did not delete everything from ' + FileName + ':' +
+      ErrorText := 'SD Core did not delete everything from ' + FileName + ':' +
         LineEnding + LineEnding + Problems
     else
       Log(Format('%d file(s) deleted from %s.', [Length(Names), FileName]));
@@ -541,7 +552,7 @@ begin
       begin
         if FindRemote(Before, RemoteNames[I], Entry) then
         begin
-          VerificationError := 'The SD file already exists (enable Overwrite to replace it): ' + RemoteNames[I];
+          VerificationError := 'The SD Core file already exists (enable Overwrite to replace it): ' + RemoteNames[I];
           Break;
         end;
       end;
@@ -562,10 +573,10 @@ begin
         Entries := After;
         if Length(Arrived) > 0 then
           ErrorText := ErrorText + LineEnding + LineEnding +
-            'These files did reach SD and were kept: ' + JoinNames(Arrived)
+            'These files did reach SD Core and were kept: ' + JoinNames(Arrived)
         else
           ErrorText := ErrorText + LineEnding + LineEnding +
-            'None of the selected files was stored on SD.';
+            'None of the selected files was stored on SD Core.';
       end;
       Exit;
     end;
@@ -582,13 +593,13 @@ begin
       if not FindRemote(After, RemoteNames[I], Entry) then
       begin
         Verified := False;
-        VerificationError := 'SD did not list the uploaded file: ' + RemoteNames[I];
+        VerificationError := 'SD Core did not list the uploaded file: ' + RemoteNames[I];
         Break;
       end;
       if Entry.Size <> LocalBytes then
       begin
         Verified := False;
-        VerificationError := Format('Size check failed for %s: local %d bytes, SD %d bytes.',
+        VerificationError := Format('Size check failed for %s: local %d bytes, SD Core %d bytes.',
           [RemoteNames[I], LocalBytes, Entry.Size]);
         { SD lets the sender delete a file it has just sent; do not leave a
           file behind that does not match the original. }
@@ -596,11 +607,11 @@ begin
         BadName[0] := RemoteNames[I];
         if Client.RemoveFiles(BadName, RemoveError) then
         begin
-          VerificationError := VerificationError + '  The SD copy was removed.';
+          VerificationError := VerificationError + '  The SD Core copy was removed.';
           if Client.List(After, RemoveError) then ;
         end
         else
-          VerificationError := VerificationError + '  The SD copy could not be removed: ' +
+          VerificationError := VerificationError + '  The SD Core copy could not be removed: ' +
             CleanError(RemoveError);
         Break;
       end;
@@ -617,7 +628,7 @@ begin
     ServerFiles := ClosedFileCount(Summary);
     if (ServerFiles >= 0) and (ServerFiles <> Length(RemoteNames)) then
     begin
-      ErrorText := Format('SD reported %d received file(s), but %d were selected.',
+      ErrorText := Format('SD Core reported %d received file(s), but %d were selected.',
         [ServerFiles, Length(RemoteNames)]);
       Exit;
     end;
@@ -701,7 +712,7 @@ begin
     for I := 0 to High(Names) do
       if not FindRemote(Before, Names[I], Entry) then
       begin
-        VerificationError := 'SD is not offering the file: ' + Names[I];
+        VerificationError := 'SD Core is not offering the file: ' + Names[I];
         Break;
       end;
     if VerificationError <> '' then
@@ -732,7 +743,7 @@ begin
       if not FindRemote(After, Names[I], Entry) then
       begin
         Verified := False;
-        VerificationError := 'SD did not list the downloaded file: ' + Names[I];
+        VerificationError := 'SD Core did not list the downloaded file: ' + Names[I];
         Break;
       end;
       RemoteBytes := Entry.Size;
@@ -740,7 +751,7 @@ begin
       if RemoteBytes <> LocalBytes then
       begin
         Verified := False;
-        VerificationError := Format('Size check failed for %s: SD %d bytes, local %d bytes.',
+        VerificationError := Format('Size check failed for %s: SD Core %d bytes, local %d bytes.',
           [Names[I], RemoteBytes, LocalBytes]);
         Break;
       end;
@@ -757,7 +768,7 @@ begin
     ServerFiles := ClosedFileCount(Summary);
     if (ServerFiles >= 0) and (ServerFiles <> Length(Names)) then
     begin
-      ErrorText := Format('SD reported %d sent file(s), but %d were selected.',
+      ErrorText := Format('SD Core reported %d sent file(s), but %d were selected.',
         [ServerFiles, Length(Names)]);
       Exit;
     end;

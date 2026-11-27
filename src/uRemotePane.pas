@@ -66,7 +66,7 @@ begin
   FTitle.Top := 0;
   FTitle.Align := alTop;
   FTitle.AutoSize := True;
-  FTitle.Caption := 'SD server - xfer.in';
+  FTitle.Caption := 'SD Core server - xfer.in';
   FTitle.Font.Style := [fsBold];
   FTitle.BorderSpacing.Bottom := 4;
 
@@ -90,7 +90,7 @@ begin
   FViewXfer.GroupIndex := 7;
   FViewXfer.AllowAllUp := False;
   FViewXfer.Down := True;
-  FViewXfer.Hint := 'Work with the SD transfer folder itself';
+  FViewXfer.Hint := 'Work with the SD Core transfer folder itself';
   FViewXfer.ShowHint := True;
   FViewXfer.OnClick := @ViewClick;
 
@@ -111,7 +111,7 @@ begin
   FRefresh.Align := alRight;
   FRefresh.Width := 80;
   FRefresh.Caption := 'Refresh';
-  FRefresh.Hint := 'List the SD folder again';
+  FRefresh.Hint := 'List the SD Core folder again';
   FRefresh.ShowHint := True;
   FRefresh.OnClick := @RefreshClick;
 
@@ -129,7 +129,7 @@ begin
   FHint.Align := alBottom;
   FHint.AutoSize := True;
   FHint.BorderSpacing.Top := 3;
-  FHint.Caption := 'Drag files here to upload; the SD pane is read-only otherwise.';
+  FHint.Caption := 'Drag files here to upload; the SD Core pane is read-only otherwise.';
   FHint.Font.Color := clGrayText;
 
   FList := TListView.Create(Self);
@@ -142,7 +142,7 @@ begin
   FList.HideSelection := False;
   FList.DragMode := dmAutomatic;
   FList.ShowHint := True;
-  FList.Hint := 'The SD server exposes only xfer.in (uploads) or xfer.out (downloads).';
+  FList.Hint := 'The SD Core server exposes only xfer.in (uploads) or xfer.out (downloads).';
   FList.OnResize := @ListResize;
   FList.Columns.Add;
   FList.Columns[0].Caption := 'Name';
@@ -226,10 +226,10 @@ procedure TRemotePane.SetDirectoryName(const DirectoryName: string;
   UploadMode: Boolean);
 begin
   if UploadMode then
-    FTitle.Caption := 'SD server - ' + DirectoryName + ' (uploads)'
+    FTitle.Caption := 'SD Core server - ' + DirectoryName + ' (uploads)'
   else
-    FTitle.Caption := 'SD server - ' + DirectoryName + ' (downloads)';
-  FPathLabel.Caption := '/   (the only SD folder exposed during a transfer)';
+    FTitle.Caption := 'SD Core server - ' + DirectoryName + ' (downloads)';
+  FPathLabel.Caption := '/   (the only SD Core folder exposed during a transfer)';
 end;
 
 procedure TRemotePane.SetTitle(const ATitle, APathNote: string);

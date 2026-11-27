@@ -1,9 +1,9 @@
-# SD Server Notes
+# SD Core Server Notes
 
 This document records what the client relies on, based on the current
-development tree and the installed SD binary. The relevant source is:
+development tree and the installed SD Core binary. The relevant source is:
 
-- `sdb_ai/sd64/sdsys/gpl.bp/xfer` — the SD `receive`/`send` commands, gates,
+- `sdb_ai/sd64/sdsys/gpl.bp/xfer` — the SD Core `receive`/`send` commands, gates,
   slot lifecycle and transfer summary.
 - `sdb_ai/sd64/gplsrc/sd_sftp.c` and `sd_sftp.h` — the restricted SFTP server
   and the single-directory wall.
@@ -22,20 +22,20 @@ receive
 receive overwrite
 ```
 
-SD answers with:
+SD Core answers with:
 
 ```text
 Ready to receive into xfer.in.  Connect an sftp client to <host> port <port> as <user> and put the files.  Press Enter here when done.
 ```
 
 The client then opens a second SSH connection for SFTP, uploads the selected
-plain files, closes SFTP, and presses Enter in the first session. SD answers:
+plain files, closes SFTP, and presses Enter in the first session. SD Core answers:
 
 ```text
 Transfer closed (closed here): N file(s), B bytes
 ```
 
-If an incoming name already exists and `receive overwrite` was not used, SD
+If an incoming name already exists and `receive overwrite` was not used, SD Core
 refuses that file. The client preflights the remote listing and refuses the job
 before uploading when **Overwrite existing** is off.
 
@@ -46,7 +46,7 @@ ssh -p <port> <user>@<host>
 send <source-file> <record-id> {<record-id> ...}
 ```
 
-SD copies those records into `xfer.out` and answers:
+SD Core copies those records into `xfer.out` and answers:
 
 ```text
 Ready to send from xfer.out.  Connect an sftp client to <host> port <port> as <user> and get the files.  Press Enter here when done.
@@ -55,11 +55,12 @@ Ready to send from xfer.out.  Connect an sftp client to <host> port <port> as <u
 The client opens SFTP, gets the selected files from the one remote directory,
 closes SFTP, and presses Enter. The same `Transfer closed` summary is checked.
 
-The record IDs are part of the `send` command; the client cannot ask SD for an
-arbitrary directory listing before the slot exists. That is why the Download
-tab has explicit **source file** and **Record id(s)** fields.
+The record IDs are part of the `send` command. The client lists the SD Core file
+first at the SD Core prompt (`SORT <file> EVAL "@ID" ...`, no slot needed) and the
+person picks the records in the SD Core pane, so the ids it sends are the ones SD Core
+listed.
 
-## 2. Gates checked by SD
+## 2. Gates checked by SD Core
 
 From `xfer`:
 
@@ -83,7 +84,7 @@ Required server setup:
 # sd.conf
 XFER=1
 
-# SD administrator
+# SD Core administrator
 modify.account <user> xfer-on
 ```
 
@@ -101,23 +102,26 @@ operations to this one directory, rejects links, and removes the server's own
 partial files. Nested directories are not transferable. The client shows `/` as
 the remote path because that is the one directory root exposed by the server.
 
-SD accepts plain files only. The upload path rejects NUL bytes and bytes
-248–255. File names are subject to SD's name rules (no leading `.` or `~`, and
+SD Core accepts plain files only. The upload path rejects NUL bytes and bytes
+248–255. File names are subject to SD Core's name rules (no leading `.` or `~`, and
 no `* , = > < % / + : ; ? " \` characters). Spaces in ordinary file names are
-supported and are quoted for the SFTP client; source file and record IDs used
-in the SD `send` command are single tokens and cannot contain spaces.
+supported and are quoted for the SFTP client. But `send` splits its arguments
+on spaces with no quoting (`field(s, ' ', w)` in `gpl.bp/xfer`, all four
+editions), so a record whose name contains a space can be uploaded but not
+sent: the client refuses such a download and asks for a rename first, rather
+than send a command that names other records.
 
 ## 4. Why the client uses two SSH sessions
 
-The SD login is not a normal shell. It starts SD and exposes its command
-language. `receive` and `send` keep that SD session waiting while a separate
+The SD Core login is not a normal shell. It starts SD Core and exposes its command
+language. `receive` and `send` keep that SD Core session waiting while a separate
 SFTP subsystem connection performs the file I/O. The client therefore:
 
-1. opens the SD command session and activates the slot;
+1. opens the SD Core command session and activates the slot;
 2. opens a separate SFTP connection with the same host, port and account;
 3. transfers and closes SFTP;
-4. sends Enter to the SD command session to close the slot;
-5. closes the SD session.
+4. sends Enter to the SD Core command session to close the slot;
+5. closes the SD Core session.
 
 The slot is not kept open between UI clicks. Preview/refresh opens a slot,
 lists, closes it, and returns; the actual transfer repeats the activation. This
@@ -125,13 +129,13 @@ avoids leaving a live slot when a user pauses or closes the window.
 
 ## 5. Terminal handling
 
-SD is an interactive terminal application. The client invokes `script` to
-allocate a PTY with a 160x50 window, then runs `ssh -tt`. The SD prompt is
+SD Core is an interactive terminal application. The client invokes `script` to
+allocate a PTY with a 160x50 window, then runs `ssh -tt`. The SD Core prompt is
 detected after ANSI screen output is normalized. If the account is configured
-to start at the SD home screen, the client sends Alt-T to open the terminal
+to start at the SD Core home screen, the client sends Alt-T to open the terminal
 tile before issuing the transfer command. The Enter key is sent as a carriage
 return (`#13`), as a real terminal does; sending only a line feed is not enough
-for the SD line editor.
+for the SD Core line editor.
 
 ## 6. Download directory persistence
 
@@ -144,7 +148,7 @@ actual `xfer.out` listing before downloading.
 
 ## 7. Server summary and verification
 
-After the slot closes, SD prints a summary such as:
+After the slot closes, SD Core prints a summary such as:
 
 ```text
 Transfer closed (closed here): 2 file(s), 43 bytes
@@ -162,7 +166,7 @@ make a failed upload look successful.
 
 ## 8. Documented public server
 
-The project documentation identifies the public SD endpoint as:
+The project documentation identifies the public SD Core endpoint as:
 
 ```text
 Host:      data.sdcoredb.org
@@ -173,22 +177,20 @@ Package:   SD Core for Linux L2.0-0
 ```
 
 The host resolves and port 22 is reachable; the SSH banner reports
-OpenSSH on Debian. The actual transfer account, remote SD release and remote
+OpenSSH on Debian. The actual transfer account, remote SD Core release and remote
 `XFER`/`xfer-on` state were not verified because no remote credentials were
-available. The public host-key fingerprints and installation notes are in
-[SERVER.md](SERVER.md).
+available. Installation and connection notes are in
+[INSTALL.md](INSTALL.md).
 
-## 9. This installed server
+## 9. Checked against a real server
 
-The installed SD server on this machine reports:
+On SD Core for Linux LC2.0-0 (the development machine) `src/tests/run_smoke.sh`
+reaches the SD Core prompt and checks listing, `COPY ... DELETING` into bp, `CNAME`,
+`DELETE` and `CREATE.FILE DATA xfer.in DIRECTORY` on an account that already
+has both files. `CREATE.FILE DATA <name> DIRECTORY` gives the VOC entry
+`F` / `<name>` and a directory with the same owner, group and mode as one
+`receive` makes, and `xfer` itself makes its directories with the same
+command, in all four editions.
 
-```text
-File transfer is not turned on for this system (XFER is 0 in sd.conf)
-```
-
-as verified by `src/tests/session_probe.lpr`. The login and SD prompt work, but
-live upload/download is intentionally blocked until an administrator enables
-`XFER=1` and grants the account `xfer-on`.
-
-Once those two gates are enabled, the existing client needs no source change:
-it will use the same `receive`/`send` sequence and SFTP flow.
+On SD Core for Windows WC2.0-0 every transfer path was checked through the GUI
+(see `WindowsVersion/README.md`).

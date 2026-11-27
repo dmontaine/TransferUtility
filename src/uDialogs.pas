@@ -9,7 +9,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls,
-  Clipbrd, uModels;
+  Clipbrd, LCLIntf, uModels;
 
 type
   TKeySetupForm = class(TForm)
@@ -75,23 +75,23 @@ const
     'POSSIBILITY OF SUCH DAMAGE.';
 
   HelpText =
-    'SD TRANSFER UTILITY' + LineEnding +
-    'Moves plain-text files between this computer and your account on an SD ' +
-    'server, over the same ssh login you use to reach SD.' + LineEnding + LineEnding +
+    'SD CORE TRANSFER UTILITY' + LineEnding +
+    'Moves plain-text files between this computer and your account on an SD Core ' +
+    'server, over the same ssh login you use to reach SD Core.' + LineEnding + LineEnding +
 
     'CONNECTING' + LineEnding +
-    '1. Choose the Server type: which edition of SD the server runs.  It ' +
+    '1. Choose the Server type: which edition of SD Core the server runs.  It ' +
     'decides the ssh port (SD Core for Linux and for Windows use the ' +
     'machine''s ssh on port 22; the two Solo editions run their own ssh on ' +
     'port 4251, and Windows Solo is found on 24251 automatically if Windows ' +
     'has reserved 4251).' + LineEnding +
-    '2. Enter the Host (name or address) and your SD user name.' + LineEnding +
+    '2. Enter the Host (name or address) and your SD Core user name.' + LineEnding +
     '3. Enter your password, or leave it empty if you sign in with an ssh key.' +
     LineEnding + '4. Click Connect.  The rest of ' +
     'the window stays grayed until the login has been checked.  While ' +
     'connected the connection details are locked; press Disconnect to change ' +
-    'them.  Each listing and transfer still signs in for its own short SD ' +
-    'session, as SD transfers require.' + LineEnding + LineEnding +
+    'them.  Each listing and transfer still signs in for its own short SD Core ' +
+    'session, as SD Core transfers require.' + LineEnding + LineEnding +
     'The first time you reach a server you are shown its host key fingerprint ' +
     'and asked whether to trust it.  If your administrator gave you a ' +
     'fingerprint, compare the two.  After that the key is remembered in ' +
@@ -104,7 +104,7 @@ const
     'If you already use ssh keys (~/.ssh/id_ed25519 and so on, or ssh-agent), ' +
     'nothing needs setting: they are used as the ssh command would use them.  ' +
     'Use Menu > SSH key setup to choose a particular key, give its passphrase, ' +
-    'create a new key, or copy your public key to give to the SD administrator, ' +
+    'create a new key, or copy your public key to give to the SD Core administrator, ' +
     'who installs it for your account.' + LineEnding + LineEnding +
 
     'MOVING FILES' + LineEnding +
@@ -113,23 +113,23 @@ const
     'several), then drag the selection onto the other pane and let go.' +
     LineEnding + LineEnding +
     'Upload and Download at the top choose the direction.  Upload puts your ' +
-    'computer on the left and SD on the right; Download swaps them, so files ' +
+    'computer on the left and SD Core on the right; Download swaps them, so files ' +
     'always move from left to right.  Turn on Overwrite to replace a file of ' +
     'the same name at the destination.' + LineEnding + LineEnding +
 
     'THE TWO LISTS' + LineEnding +
-    'The buttons above the SD list choose what it shows: the transfer folder ' +
+    'The buttons above the SD Core list choose what it shows: the transfer folder ' +
     '(xfer.in when uploading, xfer.out when downloading) or your bp file.  ' +
-    'The SD list loads by itself the first time it is shown after Connect.  ' +
-    'Each list has its own Refresh button beside it: the one above the SD ' +
-    'list lists SD again; the one beside the local folder re-reads that ' +
+    'The SD Core list loads by itself the first time it is shown after Connect.  ' +
+    'Each list has its own Refresh button beside it: the one above the SD Core ' +
+    'list lists SD Core again; the one beside the local folder re-reads that ' +
     'folder.  After a download the local folder is re-read automatically.' +
     LineEnding + LineEnding +
     'In the local list, double-click a folder to open it, use Up to go back, ' +
     'or Browse to choose another folder.' +
     LineEnding + LineEnding +
 
-    'UPLOADING (Local -> SD)' + LineEnding +
+    'UPLOADING (Local -> SD Core)' + LineEnding +
     'Only plain-text files can be uploaded.' + LineEnding +
     '  - xfer.in view: the files are put into xfer.in.' + LineEnding +
     '  - bp view: the files go into xfer.in, then just those files are ' +
@@ -137,21 +137,21 @@ const
     'touched.  With Overwrite off, a program bp already has is refused before ' +
     'anything is sent.' + LineEnding + LineEnding +
 
-    'DOWNLOADING (SD -> Local)' + LineEnding +
+    'DOWNLOADING (SD Core -> Local)' + LineEnding +
     '  - xfer.out view: lists the files waiting in xfer.out.' + LineEnding +
     '  - bp view: lists your programs.  They are copied out through xfer.out ' +
     'and those copies are removed afterwards.' + LineEnding +
-    'A file whose name contains a space cannot be named in SD''s send ' +
+    'A file whose name contains a space cannot be named in SD Core''s send ' +
     'command; rename it first (right-click > Rename).' + LineEnding + LineEnding +
 
     'RENAME AND DELETE' + LineEnding +
     'Right-click a file in either list for Rename and Delete.  ' +
     'Right-clicking a file that is not selected selects it.' +
     LineEnding +
-    '  - SD list: renames or deletes in the file shown (xfer.in, xfer.out ' +
-    'or bp) with SD''s own CNAME and DELETE.  Deleting on SD is permanent and ' +
+    '  - SD Core list: renames or deletes in the file shown (xfer.in, xfer.out ' +
+    'or bp) with SD Core''s own CNAME and DELETE.  Deleting on SD Core is permanent and ' +
     'always asks first.  Changing bp needs the same permission as editing it ' +
-    'in SD.' + LineEnding +
+    'in SD Core.' + LineEnding +
     '  - Local list: renames files or folders; Delete moves them to the ' +
     'Trash, where they can be restored.' + LineEnding + LineEnding +
 
@@ -160,8 +160,8 @@ const
     LineEnding +
 
     'IF SOMETHING GOES WRONG' + LineEnding +
-    'Every step and every SD message is shown in the Activity log.  ' +
-    '"File transfer is not turned on" or "may not move files" means the SD ' +
+    'Every step and every SD Core message is shown in the Activity log.  ' +
+    '"File transfer is not turned on" or "may not move files" means the SD Core ' +
     'administrator must enable transfers (XFER=1 in sd.conf, and ' +
     'modify.account <you> xfer-on).';
 
@@ -219,11 +219,25 @@ end;
 
 { ---------------------------------------------------------------- about }
 
+type
+  { A label that opens its caption, a web address, in the default browser. }
+  TUrlLabel = class(TLabel)
+  protected
+    procedure Click; override;
+  end;
+
+procedure TUrlLabel.Click;
+begin
+  inherited Click;
+  OpenURL(Caption);
+end;
+
 procedure ShowAboutWindow(AOwner: TComponent);
 var
   F: TForm;
   Head: TLabel;
   Info: TLabel;
+  Link: TUrlLabel;
 begin
   F := NewForm(AOwner, 'About ' + AppName, 560, 460);
   try
@@ -243,8 +257,31 @@ begin
     Info.BorderSpacing.Right := 10;
     Info.BorderSpacing.Bottom := 10;
     Info.WordWrap := True;
-    Info.Caption := 'Moves plain-text files between this computer and an SD ' +
-      'server over ssh.' + LineEnding + LineEnding + AppCopyright + LineEnding +
+    Info.Caption := 'Moves plain-text files between this computer and an SD Core ' +
+      'server over ssh.' + LineEnding + LineEnding + 'Source code:';
+
+    Link := TUrlLabel.Create(F);
+    Link.Parent := F;
+    Link.Top := 200;
+    Link.Align := alTop;
+    Link.BorderSpacing.Left := 10;
+    Link.BorderSpacing.Bottom := 10;
+    Link.Caption := AppSourceUrl;
+    Link.Font.Color := clBlue;
+    Link.Font.Style := [fsUnderline];
+    Link.Cursor := crHandPoint;
+    Link.Hint := 'Open in the web browser';
+    Link.ShowHint := True;
+
+    Info := TLabel.Create(F);
+    Info.Parent := F;
+    Info.Top := 300;
+    Info.Align := alTop;
+    Info.BorderSpacing.Left := 10;
+    Info.BorderSpacing.Right := 10;
+    Info.BorderSpacing.Bottom := 10;
+    Info.WordWrap := True;
+    Info.Caption := AppCopyright + LineEnding +
       'Released under the BSD 2-Clause License:';
 
     AddButtonBar(F, ['Close'], [mrOK]);
@@ -294,7 +331,7 @@ begin
 
   Intro := AddNote(Self, 'Most people need nothing here.  With no key chosen, ' +
     'your usual ssh keys (~/.ssh/id_ed25519 and the like) and ssh-agent are ' +
-    'used, just as the ssh command would.  Choose a key only if the SD server ' +
+    'used, just as the ssh command would.  Choose a key only if the SD Core server ' +
     'needs a particular one.', 0);
   Intro.BorderSpacing.Around := 10;
   Intro.Font.Color := clDefault;
@@ -357,7 +394,7 @@ begin
   L.Caption := 'only if the key has one; kept in memory, never saved';
 
   { --- public key }
-  G := AddGroup('Your public key: give this to the SD administrator', 200);
+  G := AddGroup('Your public key: give this to the SD Core administrator', 200);
   FPubMemo := TMemo.Create(Self);
   FPubMemo.Parent := G;
   FPubMemo.Align := alTop;
@@ -388,7 +425,7 @@ begin
   FPubNote.WordWrap := True;
   FPubNote.Font.Color := clGrayText;
   FPubNote.Caption := 'The administrator adds this line to your account''s ' +
-    '~/.ssh/authorized_keys on the SD server.  It is safe to share; never ' +
+    '~/.ssh/authorized_keys on the SD Core server.  It is safe to share; never ' +
     'share the private key.';
 
   { --- new key }
@@ -536,7 +573,7 @@ begin
       end;
     if Key = '' then
     begin
-      FPubMemo.Text := '(You have no ssh key yet.  Create one below if the SD ' +
+      FPubMemo.Text := '(You have no ssh key yet.  Create one below if the SD Core ' +
         'server is to accept a key instead of a password.)';
       Exit;
     end;
@@ -621,7 +658,7 @@ begin
   Args[1] := '-t';
   Args[2] := 'ed25519';
   Args[3] := '-C';
-  Args[4] := LocalUserName + ' (SD Transfer Utility)';
+  Args[4] := LocalUserName + ' (SD Core Transfer Utility)';
   Args[5] := '-f';
   Args[6] := Path;
   Env := EnvironmentSnapshot;
@@ -658,7 +695,7 @@ begin
   Result := False;
   ErrorText := '';
   CR := #13;
-  Comment := GetEnvironmentVariable('USER') + ' (SD Transfer Utility)';
+  Comment := GetEnvironmentVariable('USER') + ' (SD Core Transfer Utility)';
   { Answer ssh-keygen's own prompts through a terminal, so a passphrase never
     appears on a command line other users could read.  (An empty answer means
     no passphrase; an empty "-N" argument would be dropped by TProcess.) }
@@ -768,7 +805,7 @@ begin
   ShowPublicKey;
   MessageDlg('SSH key setup', 'The key was created and is now selected.' +
     LineEnding + LineEnding + 'Copy the public key shown and give it to your ' +
-    'SD administrator; the key works once it is installed for your account.',
+    'SD Core administrator; the key works once it is installed for your account.',
     mtInformation, [mbOK], 0);
 end;
 

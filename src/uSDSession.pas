@@ -440,7 +440,7 @@ end;
 procedure TSDSession.SendRaw(const Text: string);
 begin
   if (FProcess = nil) or not FProcess.Running then
-    raise ESessionError.Create('The SD session is no longer running.');
+    raise ESessionError.Create('The SD Core session is no longer running.');
   if Text <> '' then
     FProcess.Input.Write(Text[1], Length(Text));
 end;
@@ -617,7 +617,7 @@ begin
   ScriptExe := ResolveExecutable('script');
   if ScriptExe = '' then
   begin
-    FLastError := 'The util-linux "script" command was not found.  It is used to give the SD session a real PTY of 160x50.';
+    FLastError := 'The util-linux "script" command was not found.  It is used to give the SD Core session a real PTY of 160x50.';
     Exit;
   end;
 
@@ -662,8 +662,8 @@ begin
     if FLastError = '' then
       FLastError := LastUsefulErrorLine(NormalizedBuffer);
     if FLastError = '' then
-      FLastError := 'The SD session did not reach a command prompt.';
-    LogText('The SD session did not start: ' + FLastError);
+      FLastError := 'The SD Core session did not reach a command prompt.';
+    LogText('The SD Core session did not start: ' + FLastError);
     { What the server sent last, so a prompt that was not recognised can be
       seen.  It holds no password: those reach ssh only through sd-askpass. }
     if Trim(FNorm) <> '' then
@@ -695,7 +695,7 @@ begin
     begin
       FLastError := LastUsefulErrorLine(Text);
       if FLastError = '' then
-        FLastError := 'SSH ended before the SD prompt appeared.';
+        FLastError := 'SSH ended before the SD Core prompt appeared.';
       Exit(False);
     end;
 
@@ -704,26 +704,26 @@ begin
 
     if FProcess = nil then
     begin
-      FLastError := 'The SSH session ended before the SD prompt appeared.';
+      FLastError := 'The SSH session ended before the SD Core prompt appeared.';
       Exit(False);
     end;
     if not FProcess.Running and (FProcess.Output.NumBytesAvailable = 0) then
     begin
       FLastError := LastUsefulErrorLine(Text);
       if FLastError = '' then
-        FLastError := 'The SSH session ended before the SD prompt appeared.';
+        FLastError := 'The SSH session ended before the SD Core prompt appeared.';
       Exit(False);
     end;
 
     if Pos('home needs a terminal', Text) > 0 then
     begin
-      FLastError := 'The account starts in the SD home screen, but this client could not obtain a terminal.';
+      FLastError := 'The account starts in the SD Core home screen, but this client could not obtain a terminal.';
       Exit(False);
     end;
 
     if Pos('This account starts at the home screen, which could not open', Text) > 0 then
     begin
-      FLastError := 'The account starts in the SD home screen, but its terminal is smaller than 140x43 or otherwise unsupported.';
+      FLastError := 'The account starts in the SD Core home screen, but its terminal is smaller than 140x43 or otherwise unsupported.';
       Exit(False);
     end;
 
@@ -731,7 +731,7 @@ begin
     begin
       if not FSentAltT then
       begin
-        LogText('SD started in its home screen; opening the Terminal tile.');
+        LogText('SD Core started in its home screen; opening the Terminal tile.');
         SendRaw(#27 + 't');
         FSentAltT := True;
       end;
@@ -754,7 +754,7 @@ begin
     begin
       FLastError := LastUsefulErrorLine(Text);
       if FLastError = '' then
-        FLastError := 'The SSH session ended before the SD prompt appeared.';
+        FLastError := 'The SSH session ended before the SD Core prompt appeared.';
       Exit(False);
     end;
   end;
@@ -764,7 +764,7 @@ begin
   else
     FLastError := LastUsefulErrorLine(NormalizedBuffer);
   if (not Result) and (FLastError = '') then
-    FLastError := 'Timed out waiting for the SD command prompt.';
+    FLastError := 'Timed out waiting for the SD Core command prompt.';
 end;
 
 function TSDSession.WaitForReady(const Marker: string; TimeoutMs: Integer): Boolean;
@@ -788,7 +788,7 @@ begin
       if Found <> '' then
         FLastError := Found
       else
-        FLastError := 'The SD command returned to the prompt without opening a transfer.';
+        FLastError := 'The SD Core command returned to the prompt without opening a transfer.';
       Exit(False);
     end;
 
@@ -804,13 +804,13 @@ begin
     begin
       FLastError := LastUsefulErrorLine(CommandOutput);
       if FLastError = '' then
-        FLastError := 'The SD session ended before the transfer became ready.';
+        FLastError := 'The SD Core session ended before the transfer became ready.';
       Exit(False);
     end;
   end;
   FLastError := LastUsefulErrorLine(CommandOutput);
   if FLastError = '' then
-    FLastError := 'Timed out waiting for SD to open the transfer.';
+    FLastError := 'Timed out waiting for SD Core to open the transfer.';
 end;
 
 function TSDSession.WaitForPrompt(TimeoutMs: Integer): Boolean;
@@ -836,7 +836,7 @@ function TSDSession.RunReceive(const CommandText, Marker: string): Boolean;
 begin
   Result := False;
   FCommandStart := Length(FNorm);
-  LogText('SD command: ' + CommandText);
+  LogText('SD Core command: ' + CommandText);
   try
     SendLine(CommandText);
   except
@@ -857,7 +857,7 @@ begin
   if not WaitForPrompt(PromptTimeout) then
   begin
     if FLastError = '' then
-      FLastError := 'The SD command prompt is not available.';
+      FLastError := 'The SD Core command prompt is not available.';
     Exit(False);
   end;
   if Overwrite then
@@ -870,7 +870,7 @@ begin
     LogText('The receive slot is open.');
   end
   else
-    LogText('SD refused receive: ' + FLastError);
+    LogText('SD Core refused receive: ' + FLastError);
 end;
 function TSDSession.ActivateSend(const SourceFile, RecordIds: string): Boolean;
 var
@@ -884,14 +884,14 @@ begin
   if not WaitForPrompt(PromptTimeout) then
   begin
     if FLastError = '' then
-      FLastError := 'The SD command prompt is not available.';
+      FLastError := 'The SD Core command prompt is not available.';
     Exit(False);
   end;
 
   if (Pos(' ', Trim(SourceFile)) > 0) or (Pos(#9, SourceFile) > 0) or
      (Pos(#10, SourceFile) > 0) or (Pos(#13, SourceFile) > 0) then
   begin
-    FLastError := 'Download source: the SD file name must be one token with no spaces.';
+    FLastError := 'Download source: the SD Core file name must be one token with no spaces.';
     Exit(False);
   end;
   if not IsValidSdName(Trim(SourceFile), Reason) then
@@ -902,7 +902,7 @@ begin
   Ids := Trim(RecordIds);
   if Ids = '' then
   begin
-    FLastError := 'Download source: enter at least one SD record id.';
+    FLastError := 'Download source: enter at least one SD Core record id.';
     Exit(False);
   end;
   if (Pos(#10, Ids) > 0) or (Pos(#13, Ids) > 0) then
@@ -914,7 +914,7 @@ begin
   Parts := SplitTokens(Ids);
   if Length(Parts) = 0 then
   begin
-    FLastError := 'Download source: enter at least one SD record id.';
+    FLastError := 'Download source: enter at least one SD Core record id.';
     Exit(False);
   end;
   CommandText := 'send ' + Trim(SourceFile);
@@ -930,7 +930,7 @@ begin
 
   Marker := 'Ready to send from xfer.out.';
   FCommandStart := Length(NormalizedBuffer);
-  LogText('SD command: ' + CommandText);
+  LogText('SD Core command: ' + CommandText);
   try
     SendLine(CommandText);
   except
@@ -948,7 +948,7 @@ begin
     LogText('The send slot is open.');
   end
   else
-    LogText('SD refused send: ' + FLastError);
+    LogText('SD Core refused send: ' + FLastError);
 end;
 
 function TSDSession.ActivateSendOut(const Names: TNameArray): Boolean;
@@ -969,7 +969,7 @@ begin
   end;
   if not WaitForPrompt(PromptTimeout) then
   begin
-    FLastError := 'The SD command prompt is not available.';
+    FLastError := 'The SD Core command prompt is not available.';
     Exit;
   end;
   CommandText := 'send ' + SDDownloadDirectory;
@@ -978,13 +978,13 @@ begin
     if Pos(' ', Names[I]) > 0 then
     begin
       FLastError := 'The send command cannot name a file with a space in it: ' +
-        Names[I] + '.  Rename it in SD to download it.';
+        Names[I] + '.  Rename it in SD Core to download it.';
       Exit;
     end;
     CommandText := CommandText + ' ' + Names[I];
   end;
   FCommandStart := Length(FNorm);
-  LogText('SD command: ' + CommandText);
+  LogText('SD Core command: ' + CommandText);
   try
     SendLine(CommandText);
   except
@@ -1001,7 +1001,7 @@ begin
     LogText('The send slot is open.');
   end
   else
-    LogText('SD refused send: ' + FLastError);
+    LogText('SD Core refused send: ' + FLastError);
 end;
 
 
@@ -1072,15 +1072,15 @@ begin
         QuoteIds(Names, Start, Stop) + Options;
       if not WaitForPrompt(PromptTimeout) then
       begin
-        Problems := 'The SD command prompt is not available.';
+        Problems := 'The SD Core command prompt is not available.';
         Exit;
       end;
       FCommandStart := Length(FNorm);
-      LogText('SD command: ' + CommandText);
+      LogText('SD Core command: ' + CommandText);
       SendLine(CommandText);
       if not WaitForCommandPrompt(60000) then
       begin
-        Problems := Problems + 'SD did not finish the copy.' + LineEnding;
+        Problems := Problems + 'SD Core did not finish the copy.' + LineEnding;
         Exit;
       end;
       Lines.Text := CommandOutput;
@@ -1123,16 +1123,16 @@ begin
   Problems := '';
   if not WaitForPrompt(PromptTimeout) then
   begin
-    Problems := 'The SD command prompt is not available.';
+    Problems := 'The SD Core command prompt is not available.';
     Exit;
   end;
   CommandText := 'CNAME ' + FileName + ' "' + OldName + '" TO "' + NewName + '"';
   FCommandStart := Length(FNorm);
-  LogText('SD command: ' + CommandText);
+  LogText('SD Core command: ' + CommandText);
   SendLine(CommandText);
   if not WaitForCommandPrompt(60000) then
   begin
-    Problems := 'SD did not finish the rename.';
+    Problems := 'SD Core did not finish the rename.';
     Exit;
   end;
   Lines := TStringList.Create;
@@ -1178,7 +1178,7 @@ begin
   begin
     if not WaitForPrompt(PromptTimeout) then
     begin
-      Problems := Problems + 'The SD command prompt is not available.' + LineEnding;
+      Problems := Problems + 'The SD Core command prompt is not available.' + LineEnding;
       Result := False;
       Break;
     end;
@@ -1187,7 +1187,7 @@ begin
     SendLine(CommandText);
     if not WaitForCommandPrompt(30000) then
     begin
-      Problems := Problems + 'SD did not answer CREATE.FILE for ' + Names[N] + '.' + LineEnding;
+      Problems := Problems + 'SD Core did not answer CREATE.FILE for ' + Names[N] + '.' + LineEnding;
       Result := False;
       Continue;
     end;
@@ -1206,7 +1206,7 @@ begin
         else if Pos('Created DATA part', Line) > 0 then
         begin
           Ok := True;
-          LogText('Created ' + Names[N] + ' in the SD account (it is made on first use otherwise).');
+          LogText('Created ' + Names[N] + ' in the SD Core account (it is made on first use otherwise).');
         end
         else
           Said := Said + Line + ' ';
@@ -1236,16 +1236,16 @@ begin
     Exit(True);
   if not WaitForPrompt(PromptTimeout) then
   begin
-    Problems := 'The SD command prompt is not available.';
+    Problems := 'The SD Core command prompt is not available.';
     Exit;
   end;
   CommandText := 'DELETE ' + FileName + QuoteIds(Names, 0, High(Names));
   FCommandStart := Length(FNorm);
-  LogText('SD command: ' + CommandText);
+  LogText('SD Core command: ' + CommandText);
   SendLine(CommandText);
   if not WaitForCommandPrompt(60000) then
   begin
-    Problems := 'SD did not finish the delete.';
+    Problems := 'SD Core did not finish the delete.';
     Exit;
   end;
   Lines := TStringList.Create;
@@ -1311,7 +1311,7 @@ begin
   while (Q > 0) and (Text[Q] in [':', '>', ' ', #10, #13, #9]) do
     Dec(Q);
   FLastSummary := Trim(Copy(Text, 1, Q));
-  LogText('SD transfer closed.');
+  LogText('SD Core transfer closed.');
   if FLastSummary <> '' then
     LogText(FLastSummary);
   { The session stays at the prompt for any further command; AbortSession
@@ -1369,18 +1369,18 @@ begin
   ErrorText := '';
   if not IsValidSdName(FileName, Reason) or (Pos(' ', FileName) > 0) then
   begin
-    ErrorText := 'Not a file name SD can list: ' + FileName;
+    ErrorText := 'Not a file name SD Core can list: ' + FileName;
     Exit;
   end;
   if not WaitForPrompt(PromptTimeout) then
   begin
-    ErrorText := 'The SD command prompt is not available.';
+    ErrorText := 'The SD Core command prompt is not available.';
     Exit;
   end;
   CommandText := 'SORT ' + FileName + ' EVAL "@ID" FMT "120L" EVAL "LEN(@RECORD)"' +
     ' FMT "10R" ID.SUP NO.PAGE COUNT.SUP HDR.SUP ' + EchoEnd;
   FCommandStart := Length(FNorm);
-  LogText('SD command: list ' + FileName);
+  LogText('SD Core command: list ' + FileName);
   try
     SendLine(CommandText);
   except
@@ -1392,7 +1392,7 @@ begin
   end;
   if not WaitForCommandPrompt(60000) then
   begin
-    ErrorText := 'SD did not finish listing ' + FileName + '.';
+    ErrorText := 'SD Core did not finish listing ' + FileName + '.';
     Exit;
   end;
 

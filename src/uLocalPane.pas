@@ -124,7 +124,7 @@ begin
   FHint.Align := alBottom;
   FHint.AutoSize := True;
   FHint.BorderSpacing.Top := 3;
-  FHint.Caption := 'Drag selected files onto the SD pane to upload.';
+  FHint.Caption := 'Drag selected files onto the SD Core pane to upload.';
   FHint.Font.Color := clGrayText;
 
   FList := TListView.Create(Self);
@@ -137,7 +137,7 @@ begin
   FList.HideSelection := False;
   FList.DragMode := dmAutomatic;
   FList.ShowHint := True;
-  FList.Hint := 'Select files here, then drag them to the SD pane (Upload mode).';
+  FList.Hint := 'Select files here, then drag them to the SD Core pane (Upload mode).';
   FList.OnDblClick := @ListDoubleClick;
   FList.OnResize := @ListResize;
   FList.Columns.Add;

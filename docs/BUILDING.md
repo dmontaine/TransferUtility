@@ -1,4 +1,4 @@
-# Building SD Transfer Utility
+# Building SD Core Transfer Utility
 
 This page covers the Linux build. For Windows, see `WindowsVersion/README.md`
 (`powershell -ExecutionPolicy Bypass -File WindowsVersion\build.ps1`).
@@ -90,7 +90,7 @@ command line.
 
 ## 5. Smoke tests
 
-The test programs use a fake `ssh` command that invokes the installed SD binary
+The test programs use a fake `ssh` command that invokes the installed SD Core binary
 locally, and a fake `sftp` command that returns a controlled long listing. They
 do not need the GUI or a live password.
 
@@ -101,15 +101,15 @@ cd ~/SDCoreProject/TransferUtility
 
 The test output should show:
 
-- the SD prompt is reached;
-- `send` with a deliberately nonexistent source is refused with an SD error
+- the SD Core prompt is reached;
+- `send` with a deliberately nonexistent source is refused with an SD Core error
   (on this server, `File transfer is not turned on ...`);
 - the SFTP long-listing parser returns the expected entries, including a file
   name containing spaces;
-- a fake SD terminal accepts `receive`, closes on Enter, and the client parses
+- a fake SD Core terminal accepts `receive`, closes on Enter, and the client parses
   `Transfer closed (...): 1 file(s), 11 bytes`.
 
-A live upload/download test additionally requires the SD server's `XFER` switch
+A live upload/download test additionally requires the SD Core server's `XFER` switch
 and the account's `xfer-on` flag. See [SD_SERVER_NOTES.md](SD_SERVER_NOTES.md).
 
 ## 6. Running from a desktop
@@ -124,7 +124,7 @@ display). The command session itself is terminal-only and is opened by the app.
 
 ## 7. Deploying to another machine or server
 
-TransferUtility is a desktop client. It is not an SD server daemon and does not
+TransferUtility is a desktop client. It is not an SD Core server daemon and does not
 go into `/usr/local/sdsys`. If the target is a headless server, run the GUI on a
 desktop instead; a GTK3 application needs a display.
 
@@ -141,7 +141,7 @@ LinuxVersion/build.sh
 
 Keep `bin/sd-transfer` and `bin/sd-askpass` together. The destination can be a
 normal user directory; no root install is needed. The connection profiles and
-remote endpoint are documented in [SERVER.md](SERVER.md).
+remote endpoint are documented in [INSTALL.md](INSTALL.md).
 
 ## 8. Cleaning
 

@@ -26,7 +26,10 @@ begin
     WriteLn('start=', Started, ' error=', Session.LastError);
     if not Started then
       Halt(1);
-    Rejected := Session.ActivateSend('ZZZ_NOT_AN_SD_FILE_9Q', 'NOPE');
+    { The account already has both files: CREATE.FILE must leave them alone. }
+    Listed := Session.EnsureTransferFiles(ErrorText);
+    WriteLn('ensure-xfer-files=', Listed, ' problems=', ErrorText);
+    Rejected :=Session.ActivateSend('ZZZ_NOT_AN_SD_FILE_9Q', 'NOPE');
     WriteLn('missing-source-send=', Rejected, ' error=', Session.LastError);
 
     if Rejected then

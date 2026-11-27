@@ -8,9 +8,10 @@ uses
   Classes, SysUtils;
 
 const
-  AppName = 'SD Transfer Utility';
+  AppName = 'SD Core Transfer Utility';
   AppVersion = '1.1.0';
   AppCopyright = 'Copyright (c) 2026 Donald Montaine';
+  AppSourceUrl = 'https://github.com/dmontaine/TransferUtility';
   SDUploadDirectory = 'xfer.in';
   SDProgramFile = 'bp';
   SDDownloadDirectory = 'xfer.out';
@@ -89,29 +90,29 @@ begin
   end;
   if (Name = '.') or (Name = '..') then
   begin
-    Reason := 'The SD transfer directory does not accept . or ...';
+    Reason := 'The SD Core transfer directory does not accept . or ...';
     Exit;
   end;
   if (Name[1] = '.') or (Name[1] = '~') then
   begin
-    Reason := 'The SD transfer directory does not accept a name beginning with . or ~.';
+    Reason := 'The SD Core transfer directory does not accept a name beginning with . or ~.';
     Exit;
   end;
   for I := 1 to Length(Name) do
   begin
     if Name[I] in SDForbiddenNameChars then
     begin
-      Reason := Format('The SD transfer directory does not accept the character "%s" in a file name.', [Name[I]]);
+      Reason := Format('The SD Core transfer directory does not accept the character "%s" in a file name.', [Name[I]]);
       Exit;
     end;
     if (Ord(Name[I]) < 32) or (Ord(Name[I]) = 127) then
     begin
-      Reason := 'The SD transfer directory does not accept control characters in a file name.';
+      Reason := 'The SD Core transfer directory does not accept control characters in a file name.';
       Exit;
     end;
     if Ord(Name[I]) >= 248 then
     begin
-      Reason := 'The SD transfer directory does not accept a mark byte (248-255) in a file name.';
+      Reason := 'The SD Core transfer directory does not accept a mark byte (248-255) in a file name.';
       Exit;
     end;
   end;
@@ -137,7 +138,7 @@ begin
         begin
           if (Buffer[I] = 0) or (Buffer[I] >= 248) then
           begin
-            Reason := 'SD moves plain text only: this file contains a NUL byte or a byte from 248 to 255.';
+            Reason := 'SD Core moves plain text only: this file contains a NUL byte or a byte from 248 to 255.';
             Exit;
           end;
         end;
@@ -246,11 +247,11 @@ function IsValidSshTarget(const Host, UserName: string; out Reason: string): Boo
   end;
 begin
   Reason := '';
-  Result := Clean(Host, 'SD server host name or address') and
-    Clean(UserName, 'SD user name');
+  Result := Clean(Host, 'SD Core server host name or address') and
+    Clean(UserName, 'SD Core user name');
   if Result and (Pos('@', UserName) > 0) then
   begin
-    Reason := 'The SD user name cannot contain "@"; put the host in the Host field.';
+    Reason := 'The SD Core user name cannot contain "@"; put the host in the Host field.';
     Result := False;
   end;
 end;

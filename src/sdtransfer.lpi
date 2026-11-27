@@ -7,7 +7,7 @@
         <LRSInOutputDirectory Value="False"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="SD Transfer Utility"/>
+      <Title Value="SD Core Transfer Utility"/>
       <UseAppBundle Value="False"/>
       <MainUnit Value="0"/>
       <WidgetSet Value="gtk3"/>

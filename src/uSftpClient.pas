@@ -320,14 +320,14 @@ begin
   begin
     ErrorText := Trim(Output);
     if ErrorText = '' then
-      ErrorText := 'SFTP could not list the SD transfer directory.';
+      ErrorText := 'SFTP could not list the SD Core transfer directory.';
     Exit;
   end;
   if LooksLikeTransferError(Output) then
   begin
     ErrorText := Trim(Output);
     if ErrorText = '' then
-      ErrorText := 'SFTP reported an error while listing the SD transfer directory.';
+      ErrorText := 'SFTP reported an error while listing the SD Core transfer directory.';
     Exit;
   end;
   Entries := ParseLongListing(Output);
@@ -397,7 +397,7 @@ begin
   ErrorText := '';
   if Length(RemoteNames) = 0 then
   begin
-    ErrorText := 'No SD files were selected.';
+    ErrorText := 'No SD Core files were selected.';
     Exit;
   end;
   if Length(RemoteNames) <> Length(LocalPaths) then

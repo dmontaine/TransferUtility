@@ -40,7 +40,8 @@ function DefaultAppConfig: TAppConfig;
 begin
   Result.Connection.Host := '127.0.0.1';
   Result.Connection.Port := 22;
-  Result.Connection.UserName := GetEnvironmentVariable({$IFDEF WINDOWS}'USERNAME'{$ELSE}'USER'{$ENDIF});
+  { Blank on first run: the SD account name is usually not the local login name. }
+  Result.Connection.UserName := '';
   Result.Connection.Password := '';
   Result.Connection.KeyFile := '';
   Result.Connection.Passphrase := '';

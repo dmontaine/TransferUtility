@@ -2,7 +2,7 @@ program sdaskpass;
 
 { OpenSSH askpass helper.  ssh runs it with its prompt as the first argument
   and reads the answer from standard output.  The answers come from the
-  environment of the ssh process, set by SD Transfer Utility, and are never
+  environment of the ssh process, set by SD Core Transfer Utility, and are never
   written to disk:
     SDTU_SSH_PASSPHRASE  for "Enter passphrase for key ..." prompts
     SDTU_SSH_PASSWORD    for the account password

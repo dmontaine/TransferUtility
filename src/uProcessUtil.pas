@@ -438,22 +438,22 @@ begin
   else
     Target := '[' + Host + ']:' + IntToStr(Port);
   if Pos('IDENTIFICATION HAS CHANGED', Output) > 0 then
-    Result := 'The SD server''s host key is not the one this computer saved the ' +
+    Result := 'The SD Core server''s host key is not the one this computer saved the ' +
       'last time it connected.  Either the server was reinstalled or its key was ' +
-      'replaced, or someone is intercepting the connection.  Ask the SD ' +
+      'replaced, or someone is intercepting the connection.  Ask the SD Core ' +
       'administrator.  If the key really was replaced, remove the old one with' +
       LineEnding + LineEnding + '    ssh-keygen -R ''' + Target + '''' + LineEnding +
       LineEnding + 'and connect again; you will be asked to accept the new key.'
   else if Pos('Host key verification failed', Output) > 0 then
-    Result := 'The SD server''s host key could not be verified, so the connection ' +
+    Result := 'The SD Core server''s host key could not be verified, so the connection ' +
       'was refused.'
   else if (Pos('Permission denied', Output) > 0) and not HavePassword then
-    Result := 'The SD server refused the login: no password was entered, and ' +
+    Result := 'The SD Core server refused the login: no password was entered, and ' +
       'the server did not accept this computer''s ssh key.  Enter your ' +
-      'password, or give your public key to the SD administrator (Menu > ' +
+      'password, or give your public key to the SD Core administrator (Menu > ' +
       'SSH key setup).'
   else if Pos('Permission denied', Output) > 0 then
-    Result := 'The SD server refused the login (Permission denied).  Check the ' +
+    Result := 'The SD Core server refused the login (Permission denied).  Check the ' +
       'user name and password, or the key chosen in SSH key setup.';
 end;
 
